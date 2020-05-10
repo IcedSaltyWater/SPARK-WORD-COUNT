@@ -1,0 +1,23 @@
+cd c:\dev\spark-2.4.5-bin-hadoop2.7
+bin\spark-shell
+
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+val txtData = sc.textFile(“README.md”)
+txtData.cache()
+
+txtData.count()
+
+val wcData = txtData.flatMap(l => l.split(" ")).map(word => (word, 1)).reduceByKey(_ + _)
+wcData.collect().foreach(println)
+
+val mostRepeatedWord = txtData.flatMap(l => l.split(" ")).filter(word => word.trim().length() > 0).map(word => (word, 1)).reduceByKey((a, b) => a + b).reduce((a, b) => if (a._2 > b._2) a else b)
+
+val leastRepeatedWord = txtData.flatMap(l => l.split(" ")).filter(word => word.trim().length() > 0).map(word => (word, 1)).reduceByKey((a, b) => a + b).reduce((a, b) => if (a._2 < b._2) a else b)
+
+val wc = txtData.flatMap(l => l.split(" ")).filter(word => word.trim().length() > 0).map(word => (word,1)).reduceByKey((a,b) => a + b)
+val sortwc = wc.map(_.swap)
+val mostsort = sortwc.sortByKey(false,1)
+val leastsort = sortwc.sortByKey(true,1)
+val top20 = mostsort.take(20)
+val least20 = leastsort.take(20)
